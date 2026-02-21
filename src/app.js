@@ -5,6 +5,8 @@ const cors = require("cors");
 const fs = require("fs");
 const path = require("path");
 const { getDatabase, closeDatabase } = require("./config/database");
+const swaggerUi = require("swagger-ui-express");
+const swaggerSpec = require("./config/swagger");
 const { notFoundHandler, globalErrorHandler } = require("./middleware/errorHandler");
 const authRoutes = require("./routes/authRoutes");
 const todoRoutes = require("./routes/todoRoutes");
@@ -25,7 +27,33 @@ getDatabase();
 app.use(cors());
 app.use(express.json({ limit: "10kb" }));
 
-// Health check
+// Swagger UI
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
+  customCss: ".swagger-ui .topbar { display: none }",
+  customSiteTitle: "RESTful To-Do API Docs",
+}));
+
+/**
+ * @swagger
+ * /api/health:
+ *   get:
+ *     summary: Health check
+ *     tags: [Health]
+ *     responses:
+ *       200:
+ *         description: Server is running
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: ok
+ *                 timestamp:
+ *                   type: string
+ *                   format: date-time
+ */
 app.get("/api/health", (_req, res) => {
   res.json({ status: "ok", timestamp: new Date().toISOString() });
 });

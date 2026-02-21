@@ -10,7 +10,75 @@ const router = express.Router();
 
 router.use(authenticate);
 
-// GET /api/todos
+/**
+ * @swagger
+ * /api/todos:
+ *   get:
+ *     summary: List all todos with pagination and filters
+ *     tags: [Todos]
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           default: 1
+ *         description: Page number
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           maximum: 100
+ *           default: 10
+ *         description: Items per page
+ *       - in: query
+ *         name: completed
+ *         schema:
+ *           type: boolean
+ *         description: Filter by completion status
+ *       - in: query
+ *         name: priority
+ *         schema:
+ *           type: string
+ *           enum: [low, medium, high]
+ *         description: Filter by priority level
+ *       - in: query
+ *         name: sortBy
+ *         schema:
+ *           type: string
+ *           enum: [created_at, updated_at, priority, title]
+ *           default: created_at
+ *         description: Sort field
+ *       - in: query
+ *         name: order
+ *         schema:
+ *           type: string
+ *           enum: [ASC, DESC]
+ *           default: DESC
+ *         description: Sort order
+ *     responses:
+ *       200:
+ *         description: Paginated list of todos
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Todo'
+ *                 meta:
+ *                   $ref: '#/components/schemas/PaginationMeta'
+ *       401:
+ *         description: Not authenticated
+ */
 router.get(
   "/",
   [
@@ -47,7 +115,40 @@ router.get(
   }
 );
 
-// GET /api/todos/:id
+/**
+ * @swagger
+ * /api/todos/{id}:
+ *   get:
+ *     summary: Get a single todo by ID
+ *     tags: [Todos]
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *         description: Todo ID
+ *     responses:
+ *       200:
+ *         description: Todo found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   $ref: '#/components/schemas/Todo'
+ *       401:
+ *         description: Not authenticated
+ *       404:
+ *         description: Todo not found
+ */
 router.get(
   "/:id",
   [param("id").isInt({ min: 1 }).withMessage("Todo ID must be a positive integer."), validate],
@@ -66,7 +167,53 @@ router.get(
   }
 );
 
-// POST /api/todos
+/**
+ * @swagger
+ * /api/todos:
+ *   post:
+ *     summary: Create a new todo
+ *     tags: [Todos]
+ *     security:
+ *       - BearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [title]
+ *             properties:
+ *               title:
+ *                 type: string
+ *                 minLength: 1
+ *                 maxLength: 255
+ *                 example: Learn Express.js
+ *               priority:
+ *                 type: string
+ *                 enum: [low, medium, high]
+ *                 default: medium
+ *                 example: high
+ *     responses:
+ *       201:
+ *         description: Todo created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: Todo created successfully.
+ *                 data:
+ *                   $ref: '#/components/schemas/Todo'
+ *       401:
+ *         description: Not authenticated
+ *       422:
+ *         description: Validation error
+ */
 router.post(
   "/",
   [
@@ -90,7 +237,63 @@ router.post(
   }
 );
 
-// PUT /api/todos/:id
+/**
+ * @swagger
+ * /api/todos/{id}:
+ *   put:
+ *     summary: Update an existing todo
+ *     tags: [Todos]
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *         description: Todo ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               title:
+ *                 type: string
+ *                 maxLength: 255
+ *                 example: Updated title
+ *               completed:
+ *                 type: boolean
+ *                 example: true
+ *               priority:
+ *                 type: string
+ *                 enum: [low, medium, high]
+ *                 example: high
+ *     responses:
+ *       200:
+ *         description: Todo updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: Todo updated successfully.
+ *                 data:
+ *                   $ref: '#/components/schemas/Todo'
+ *       401:
+ *         description: Not authenticated
+ *       404:
+ *         description: Todo not found
+ *       422:
+ *         description: Validation error
+ */
 router.put(
   "/:id",
   [
@@ -116,7 +319,43 @@ router.put(
   }
 );
 
-// PATCH /api/todos/:id/toggle
+/**
+ * @swagger
+ * /api/todos/{id}/toggle:
+ *   patch:
+ *     summary: Toggle todo completed status
+ *     tags: [Todos]
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *         description: Todo ID
+ *     responses:
+ *       200:
+ *         description: Todo toggled successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: Todo toggled successfully.
+ *                 data:
+ *                   $ref: '#/components/schemas/Todo'
+ *       401:
+ *         description: Not authenticated
+ *       404:
+ *         description: Todo not found
+ */
 router.patch(
   "/:id/toggle",
   [param("id").isInt({ min: 1 }).withMessage("Todo ID must be a positive integer."), validate],
@@ -136,7 +375,41 @@ router.patch(
   }
 );
 
-// DELETE /api/todos/:id
+/**
+ * @swagger
+ * /api/todos/{id}:
+ *   delete:
+ *     summary: Delete a todo
+ *     tags: [Todos]
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *         description: Todo ID
+ *     responses:
+ *       200:
+ *         description: Todo deleted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: Todo deleted successfully.
+ *       401:
+ *         description: Not authenticated
+ *       404:
+ *         description: Todo not found
+ */
 router.delete(
   "/:id",
   [param("id").isInt({ min: 1 }).withMessage("Todo ID must be a positive integer."), validate],
