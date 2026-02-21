@@ -35,6 +35,106 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
 
 /**
  * @swagger
+ * /:
+ *   get:
+ *     summary: API welcome page
+ *     tags: [Root]
+ *     responses:
+ *       200:
+ *         description: Welcome HTML page with API info and author signature
+ *         content:
+ *           text/html:
+ *             schema:
+ *               type: string
+ */
+app.get("/", (_req, res) => {
+  res.send(`
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <title>RESTful To-Do API</title>
+      <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+          min-height: 100vh;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+          color: #e2e8f0;
+        }
+        .container {
+          text-align: center;
+          padding: 2rem;
+          max-width: 600px;
+        }
+        h1 {
+          font-size: 2.5rem;
+          font-weight: 700;
+          margin-bottom: 0.5rem;
+          background: linear-gradient(90deg, #38bdf8, #818cf8);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+        }
+        .version { color: #64748b; margin-bottom: 2rem; }
+        .links {
+          display: flex;
+          gap: 1rem;
+          justify-content: center;
+          flex-wrap: wrap;
+          margin-bottom: 3rem;
+        }
+        .links a {
+          display: inline-block;
+          padding: 0.6rem 1.4rem;
+          border-radius: 8px;
+          text-decoration: none;
+          font-weight: 500;
+          transition: transform 0.15s, box-shadow 0.15s;
+        }
+        .links a:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+        .btn-primary { background: #3b82f6; color: #fff; }
+        .btn-secondary { background: #334155; color: #cbd5e1; }
+        footer.sign {
+          margin-top: 2rem;
+          font-size: 0.875rem;
+          color: #64748b;
+        }
+        footer.sign a {
+          color: #38bdf8;
+          text-decoration: none;
+          transition: color 0.15s;
+        }
+        footer.sign a:hover { color: #818cf8; }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <h1>RESTful To-Do API</h1>
+        <p class="version">v1.0.0</p>
+        <div class="links">
+          <a href="/api-docs" class="btn-primary">API Documentation</a>
+          <a href="/api/health" class="btn-secondary">Health Check</a>
+        </div>
+        <!-- Footer -->
+        <footer class="sign">
+          Created by
+          <a href="https://serkanbayraktar.com/" target="_blank" rel="noopener noreferrer">Serkanby</a>
+          |
+          <a href="https://github.com/Serkanbyx" target="_blank" rel="noopener noreferrer">Github</a>
+        </footer>
+      </div>
+    </body>
+    </html>
+  `);
+});
+
+/**
+ * @swagger
  * /api/health:
  *   get:
  *     summary: Health check

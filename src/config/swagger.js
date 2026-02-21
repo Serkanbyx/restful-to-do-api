@@ -8,7 +8,8 @@ const options = {
       version: "1.0.0",
       description: "A RESTful API for managing to-do items with JWT authentication, priority levels, and pagination.",
       contact: {
-        name: "API Support",
+        name: "Serkanby",
+        url: "https://serkanbayraktar.com/",
       },
     },
     servers:
@@ -87,6 +88,7 @@ const options = {
       },
     },
     tags: [
+      { name: "Root", description: "API welcome page" },
       { name: "Health", description: "Health check endpoint" },
       { name: "Auth", description: "Authentication and user management" },
       { name: "Todos", description: "Todo CRUD operations" },
