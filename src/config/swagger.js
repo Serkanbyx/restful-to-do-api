@@ -11,15 +11,12 @@ const options = {
         name: "API Support",
       },
     },
-    servers: [
-      {
-        url: "http://localhost:{port}",
-        description: "Development server",
-        variables: {
-          port: { default: "3000" },
-        },
-      },
-    ],
+    servers:
+      process.env.NODE_ENV === "production"
+        ? [{ url: process.env.API_URL || "/", description: "Production server" }]
+        : [
+            { url: `http://localhost:${process.env.PORT || 3000}`, description: "Development server" },
+          ],
     components: {
       securitySchemes: {
         BearerAuth: {
