@@ -8,8 +8,11 @@
     "dev": "nodemon src/app.js"
   },
   "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "author": {
+    "name": "Serkanby",
+    "url": "https://serkanbayraktar.com/"
+  },
+  "license": "MIT",
   "engines": {
     "node": "20.x"
   },
