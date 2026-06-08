@@ -4,6 +4,7 @@ const jwt = require("jsonwebtoken");
 const { body } = require("express-validator");
 const { validate } = require("../middleware/validate");
 const { authenticate } = require("../middleware/auth");
+const { authLimiter } = require("../middleware/rateLimiter");
 const { createUser, findUserByEmail, findUserByUsername, findUserById } = require("../models/userModel");
 const { sendSuccess, sendError } = require("../utils/apiResponse");
 
@@ -72,6 +73,7 @@ const generateToken = (user) => {
  */
 router.post(
   "/register",
+  authLimiter,
   [
     body("username")
       .trim()
@@ -161,6 +163,7 @@ router.post(
  */
 router.post(
   "/login",
+  authLimiter,
   [
     body("email").trim().isEmail().withMessage("Please provide a valid email address.").normalizeEmail(),
     body("password").notEmpty().withMessage("Password is required."),

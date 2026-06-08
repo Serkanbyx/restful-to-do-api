@@ -1,14 +1,16 @@
 const Database = require("better-sqlite3");
 const path = require("path");
 
-const DB_PATH = path.join(__dirname, "..", "..", "data", "todo.db");
+const DB_PATH = process.env.DATABASE_PATH || path.join(__dirname, "..", "..", "data", "todo.db");
 
 let db;
 
 const getDatabase = () => {
   if (!db) {
     db = new Database(DB_PATH);
-    db.pragma("journal_mode = WAL");
+    if (DB_PATH !== ":memory:") {
+      db.pragma("journal_mode = WAL");
+    }
     db.pragma("foreign_keys = ON");
     initializeTables();
   }

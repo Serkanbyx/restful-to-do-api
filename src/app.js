@@ -2,17 +2,22 @@ require("dotenv").config();
 
 const express = require("express");
 const cors = require("cors");
+const helmet = require("helmet");
 const fs = require("fs");
 const path = require("path");
+const { validateEnv } = require("./config/env");
 const { getDatabase, closeDatabase } = require("./config/database");
 const swaggerUi = require("swagger-ui-express");
 const swaggerSpec = require("./config/swagger");
 const { notFoundHandler, globalErrorHandler } = require("./middleware/errorHandler");
+const { apiLimiter } = require("./middleware/rateLimiter");
 const authRoutes = require("./routes/authRoutes");
 const todoRoutes = require("./routes/todoRoutes");
 
+const config = validateEnv();
+
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = config.port;
 
 // Ensure data directory exists
 const dataDir = path.join(__dirname, "..", "data");
@@ -23,8 +28,19 @@ if (!fs.existsSync(dataDir)) {
 // Initialize database
 getDatabase();
 
+// Trust reverse proxy (needed for correct client IPs behind hosts like Render)
+app.set("trust proxy", 1);
+
 // Global middleware
-app.use(cors());
+// CSP is disabled because the welcome page and Swagger UI rely on inline assets.
+app.use(helmet({ contentSecurityPolicy: false }));
+
+const corsOptions =
+  config.corsOrigin === "*"
+    ? {}
+    : { origin: config.corsOrigin.split(",").map((origin) => origin.trim()) };
+app.use(cors(corsOptions));
+
 app.use(express.json({ limit: "10kb" }));
 
 // Swagger UI
@@ -300,6 +316,7 @@ app.get("/api/health", (_req, res) => {
 });
 
 // Routes
+app.use("/api", apiLimiter);
 app.use("/api/auth", authRoutes);
 app.use("/api/todos", todoRoutes);
 
@@ -307,23 +324,24 @@ app.use("/api/todos", todoRoutes);
 app.use(notFoundHandler);
 app.use(globalErrorHandler);
 
-// Start server
-const server = app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
-  console.log(`Environment: ${process.env.NODE_ENV || "development"}`);
-});
-
-// Graceful shutdown
-const gracefulShutdown = (signal) => {
-  console.log(`\n${signal} received. Shutting down gracefully...`);
-  server.close(() => {
-    closeDatabase();
-    console.log("Server closed.");
-    process.exit(0);
+// Start server (skipped during tests so Supertest can import the app directly)
+if (config.nodeEnv !== "test") {
+  const server = app.listen(PORT, () => {
+    console.log(`Server running on http://localhost:${PORT}`);
+    console.log(`Environment: ${config.nodeEnv}`);
   });
-};
 
-process.on("SIGTERM", () => gracefulShutdown("SIGTERM"));
-process.on("SIGINT", () => gracefulShutdown("SIGINT"));
+  const gracefulShutdown = (signal) => {
+    console.log(`\n${signal} received. Shutting down gracefully...`);
+    server.close(() => {
+      closeDatabase();
+      console.log("Server closed.");
+      process.exit(0);
+    });
+  };
+
+  process.on("SIGTERM", () => gracefulShutdown("SIGTERM"));
+  process.on("SIGINT", () => gracefulShutdown("SIGINT"));
+}
 
 module.exports = app;

@@ -14,9 +14,13 @@ A modern, secure RESTful API for managing to-do items. Built with Express.js, SQ
 - **Pagination** — Page-based pagination with configurable limits (up to 100 items per page)
 - **Filtering & Sorting** — Filter by completion status and priority; sort by any field in ASC/DESC order
 - **Input Validation** — Robust request validation powered by express-validator
+- **Security Hardening** — HTTP security headers via Helmet and brute-force protection via rate limiting
+- **Rate Limiting** — Stricter limits on authentication routes and a global limit on the API surface
+- **Environment Validation** — Required environment variables are validated on startup to fail fast
+- **Configurable CORS** — Restrict allowed origins through an environment variable
+- **Automated Tests** — Integration test suite powered by Jest and Supertest
 - **Swagger Documentation** — Interactive API docs with Swagger UI for easy testing
 - **Graceful Shutdown** — Clean server shutdown handling for SIGTERM and SIGINT signals
-- **CORS Enabled** — Cross-origin resource sharing out of the box
 
 ## Live Demo
 
@@ -32,9 +36,12 @@ A modern, secure RESTful API for managing to-do items. Built with Express.js, SQ
 - **JWT (jsonwebtoken)**: Stateless token-based authentication
 - **bcryptjs**: Secure password hashing
 - **express-validator**: Declarative input validation and sanitization
+- **Helmet**: Sets secure HTTP response headers
+- **express-rate-limit**: Request rate limiting to mitigate brute-force attacks
 - **Swagger (swagger-jsdoc + swagger-ui-express)**: Auto-generated interactive API documentation
 - **dotenv**: Environment variable management
 - **CORS**: Cross-origin resource sharing middleware
+- **Jest + Supertest**: Integration testing (dev dependencies)
 - **Nodemon**: Development hot-reload (dev dependency)
 
 ## Installation
@@ -61,7 +68,18 @@ PORT=3000
 NODE_ENV=development
 JWT_SECRET=your-super-secret-jwt-key-change-this-in-production
 JWT_EXPIRES_IN=7d
+CORS_ORIGIN=*
 ```
+
+> A ready-to-copy template is available in [`.env.example`](.env.example). `JWT_SECRET` is **required** — the server will refuse to start without it.
+
+| Variable        | Required | Default       | Description                                              |
+| --------------- | -------- | ------------- | -------------------------------------------------------- |
+| `PORT`          | No       | `3000`        | Port the server listens on                               |
+| `NODE_ENV`      | No       | `development` | Runtime environment (`development`, `production`, `test`)|
+| `JWT_SECRET`    | Yes      | —             | Secret used to sign JWT tokens                           |
+| `JWT_EXPIRES_IN`| No       | `7d`          | Token expiration window                                  |
+| `CORS_ORIGIN`   | No       | `*`           | Comma-separated allowed origins, or `*` to allow all     |
 
 4. Start the server:
 
@@ -74,6 +92,20 @@ npm start
 ```
 
 5. Open your browser and navigate to `http://localhost:3000` to see the welcome page, or `http://localhost:3000/api-docs` for Swagger documentation.
+
+## Testing
+
+The project ships with an integration test suite built on Jest and Supertest. Tests run against an isolated in-memory SQLite database, so they never touch your development data.
+
+```bash
+# Run all tests once
+npm test
+
+# Run tests in watch mode
+npm run test:watch
+```
+
+The suite covers authentication (registration, login, validation, duplicate handling), full todo CRUD, pagination, filtering, and per-user data isolation.
 
 ## Usage
 
@@ -200,10 +232,12 @@ src/
 ├── app.js                # Entry point & server configuration
 ├── config/
 │   ├── database.js       # SQLite connection & table initialization
+│   ├── env.js            # Environment variable validation
 │   └── swagger.js        # Swagger/OpenAPI configuration
 ├── middleware/
 │   ├── auth.js           # JWT authentication middleware
 │   ├── errorHandler.js   # Global error handling
+│   ├── rateLimiter.js    # Rate limiting middleware
 │   └── validate.js       # Request validation middleware
 ├── models/
 │   ├── todoModel.js      # Todo data access layer
@@ -214,9 +248,20 @@ src/
 └── utils/
     ├── apiResponse.js    # Standardized response helpers
     └── pagination.js     # Pagination utility functions
+
+tests/
+├── auth.test.js          # Authentication integration tests
+└── todos.test.js         # Todo CRUD integration tests
+
+docs/
+└── build-guide.md        # Original step-by-step build playbook
 ```
 
+> Want to see how this project was built from scratch? Read the [Step-by-Step Build Guide](docs/build-guide.md).
+
 ## Contributing
+
+Contributions are welcome! Please read the [Contributing Guide](.github/CONTRIBUTING.md) and the [Code of Conduct](.github/CODE_OF_CONDUCT.md) before getting started. Security issues should be reported privately per our [Security Policy](.github/SECURITY.md).
 
 1. Fork the repository
 2. Create a new branch (`git checkout -b feature/amazing-feature`)
